@@ -1,4 +1,4 @@
-import React, { ChangeEvent, forwardRef, useRef, useState } from 'react';
+import React, { ChangeEvent, forwardRef, useState } from 'react';
 import Button from './Button';
 
 interface FileUploadProps {
@@ -25,7 +25,8 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
   }, ref) => {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [sizeError, setSizeError] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    // We'll use a simple state to track the input element
+    const [inputElement, setInputElement] = useState<HTMLInputElement | null>(null);
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
@@ -48,16 +49,16 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
     };
 
     const handleButtonClick = () => {
-      if (fileInputRef.current) {
-        fileInputRef.current.click();
+      if (inputElement) {
+        inputElement.click();
       }
     };
 
     const clearFiles = () => {
       setSelectedFiles([]);
       setSizeError(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      if (inputElement) {
+        inputElement.value = '';
       }
       if (onChange) {
         onChange([]);
@@ -97,19 +98,20 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
           <input
             id={id}
             type="file"
-            ref={(input) => {
-              // Handle both refs
-              if (typeof ref === 'function') {
-                ref(input);
-              } else if (ref) {
-                ref.current = input;
-              }
-              fileInputRef.current = input;
-            }}
             className="hidden"
             accept={accept}
             multiple={multiple}
             onChange={handleFileChange}
+            // Use a callback ref pattern that works with both our state and the forwarded ref
+            ref={(element) => {
+              // Update our state
+              setInputElement(element);
+              
+              // Handle the forwarded ref
+              if (typeof ref === 'function') {
+                ref(element);
+              }
+            }}
           />
           
           {selectedFiles.length > 0 && (
