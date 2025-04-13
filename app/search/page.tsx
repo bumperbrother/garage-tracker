@@ -1,28 +1,20 @@
 'use client';
 
-import React from 'react';
-import { useSearchParams } from 'next/navigation';
-import SearchResults from '../../components/search/SearchResults';
+import React, { Suspense } from 'react';
 import Layout from '../../components/layout/Layout';
-import { LocationType } from '../../lib/types';
+import { Spinner } from '../../components/ui';
+import SearchPageContent from './SearchPageContent';
 
 export default function SearchPage() {
-  const searchParams = useSearchParams();
-  const query = searchParams.get('q') || '';
-  const location = searchParams.get('location') as LocationType | null;
-  const category = searchParams.get('category') || '';
-
-  // In a real application, we would fetch categories from the API
-  const categories = ['Camping', 'Christmas', 'Halloween', 'Kitchen', 'Tools', 'Clothes'];
-
   return (
     <Layout>
-      <SearchResults
-        initialQuery={query}
-        initialLocation={location || undefined}
-        initialCategory={category || undefined}
-        categories={categories}
-      />
+      <Suspense fallback={
+        <div className="py-8 flex justify-center">
+          <Spinner size="lg" />
+        </div>
+      }>
+        <SearchPageContent />
+      </Suspense>
     </Layout>
   );
 }
